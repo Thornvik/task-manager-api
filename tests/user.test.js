@@ -28,6 +28,39 @@ test('Should signup a new user', async () => {
   expect(user.password).not.toBe('Blueisnice123@')
 })
 
+test('Should not signup a new user if password is invalid', async () => {
+  await request(app)
+    .post('/users')
+    .send({
+      name: 'Ture',
+      email: 'ture@example.com',
+      password: 'Blue',
+    })
+    .expect(400)
+})
+
+test('Should not signup a new user if email is invalid', async () => {
+  await request(app)
+    .post('/users')
+    .send({
+      name: 'Ture',
+      email: 'ture@example',
+      password: 'Blue123!',
+    })
+    .expect(400)
+})
+
+test('Should not signup a new user if name is not set', async () => {
+  await request(app)
+    .post('/users')
+    .send({
+      name: '',
+      email: 'ture@example.com',
+      password: 'Blue12345!',
+    })
+    .expect(400)
+})
+
 test('Should login existing user', async () => {
   const response = await request(app)
     .post('/users/login')
@@ -91,7 +124,7 @@ test('Should uploadd avatar image', async () => {
 })
 
 test('Should update valid user fields', async () => {
-  const response = await request(app)
+  await request(app)
     .patch('/users/me')
     .set('Authorization', `Bearer ${userOne.tokens[0].token}`)
     .send({
@@ -109,6 +142,45 @@ test('Should not update invalid user fields', async () => {
     .set('Authorization', `Bearer ${userOne.tokens[0].token}`)
     .send({
       location: 'LA',
+    })
+    .expect(400)
+})
+
+test('Should not update user fields if you are not authenticated', async () => {
+  await request(app)
+    .patch('/users/me')
+    .send({
+      name: 'Micheal',
+    })
+    .expect(401)
+})
+
+test('Should not update name with invalid value', async () => {
+  await request(app)
+    .patch('/users/me')
+    .set('Authorization', `Bearer ${userOne.tokens[0].token}`)
+    .send({
+      name: '',
+    })
+    .expect(400)
+})
+
+test('Should not update email with invalid value', async () => {
+  await request(app)
+    .patch('/users/me')
+    .set('Authorization', `Bearer ${userOne.tokens[0].token}`)
+    .send({
+      email: 'test@hmm',
+    })
+    .expect(400)
+})
+
+test('Should not update password with invalid value', async () => {
+  await request(app)
+    .patch('/users/me')
+    .set('Authorization', `Bearer ${userOne.tokens[0].token}`)
+    .send({
+      password: 'hej',
     })
     .expect(400)
 })
